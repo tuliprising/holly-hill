@@ -1,23 +1,24 @@
 :root { color-scheme: dark; }
 
-html, body { 
-  height: 100%;
-  overflow: hidden;   /* kill scrollbars inside the iframe */
-}
-
+/* Base page inside the iframe */
 html, body {
   margin: 0;
   background: #0d0d12;
   font-family: ui-monospace, Menlo, Consolas, monospace;
   color: #e5e7eb;
   height: 100%;
+  overflow: hidden;          /* no scrolling inside the iframe */
 }
+
+/* Game container */
 #hollyhill-game {
   max-width: 100%;
   margin: 24px auto;
   text-align: center;
-  overflow: hidden;
+  overflow: hidden;          /* prevent stray horizontal scrollbars */
 }
+
+/* Canvas */
 #game {
   width: 100%;
   height: auto;
@@ -25,29 +26,49 @@ html, body {
   border: 2px solid #222;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  display: block;            /* removes inline-gap on some mobile browsers */
 }
-#hud { font-size: 12px; line-height: 1.4; color:#d5d7e0; margin-top: 8px; }
-#dpad {
+
+/* HUD text */
+#hud {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #d5d7e0;
   margin-top: 8px;
+}
+
+/* D-pad layout for phones, strict 3×3 grid */
+#dpad {
+  margin-top: 12px;
   display: grid;
+  grid-template-columns: 56px 56px 56px;
+  grid-template-rows: 56px 56px 56px;
   grid-template-areas:
     ". up ."
     "left . right"
     ". down .";
-  grid-template-columns: 40px 40px 40px;
-  grid-template-rows: 40px 40px 40px;
-  gap: 6px;
+  gap: 10px;
   justify-content: center;
+  align-items: center;
   touch-action: none;
 }
-#dpad [data-dir="up"] { grid-area: up; }
-#dpad [data-dir="left"] { grid-area: left; }
+
+#dpad [data-dir="up"]    { grid-area: up; }
+#dpad [data-dir="left"]  { grid-area: left; }
 #dpad [data-dir="right"] { grid-area: right; }
-#dpad [data-dir="down"] { grid-area: down; }
+#dpad [data-dir="down"]  { grid-area: down; }
+
 #dpad button {
-  width: 40px; height: 40px;
-  border: 1px solid #333; border-radius: 6px;
-  background: #1a1c24; color: #e5e7eb;
-  font: 16px ui-monospace, Menlo, Consolas, monospace;
+  width: 56px;
+  height: 56px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #1a1c24;
+  color: #e5e7eb;
+  font: 18px ui-monospace, Menlo, Consolas, monospace;
 }
-@media (min-width: 700px) { #dpad { display: none; } }
+
+/* Hide d-pad on larger screens, canvas plus HUD only */
+@media (min-width: 700px) {
+  #dpad { display: none; }
+}
