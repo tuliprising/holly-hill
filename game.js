@@ -12,40 +12,27 @@
   // ---------- HiDPI scaling for crisp pixels and text ----------
   function resizeCanvas() {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-
-    // How wide is the canvas on the page in CSS pixels
     const cssW = canvas.clientWidth || BASE_W;
     const scale = cssW / BASE_W;
-
-    // Keep aspect ratio in CSS
     const cssH = Math.round(BASE_H * scale);
     canvas.style.height = cssH + 'px';
-
-    // Increase internal resolution by DPR and the layout scale
     canvas.width  = Math.round(BASE_W * scale * dpr);
     canvas.height = Math.round(BASE_H * scale * dpr);
-
-    // Draw using game units, scaled once to match CSS and DPR
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
-
-    // No smoothing for pixel art
     ctx.imageSmoothingEnabled = false;
   }
-
-  // Recompute when layout or zoom changes
   window.addEventListener('resize', resizeCanvas);
-  // Some browsers fire this when zooming
   window.matchMedia && matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener?.('change', resizeCanvas);
 
   const C = {
     floor: '#12131a',
-    wall: '#2b2f3a',
-    door: '#6b7280',
-    player: '#b2f5ea',
-    item: '#eab308',
-    textBg: '#0b0c10',
-    text: '#e5e7eb',
-    vignette: 'rgba(0,0,0,0.25)'
+    wall:  '#2b2f3a',
+    door:  '#6b7280',
+    player:'#b2f5ea',
+    item:  '#eab308',
+    textBg:'#0b0c10',
+    text:  '#e5e7eb',
+    vignette:'rgba(0,0,0,0.25)'
   };
 
   const notes = [
@@ -73,7 +60,10 @@
         "1.......................1",
         "1111111111111111111111111"
       ],
-      doors: { '2': [{ x: 22, y: 1, to: 'wardA', tx: 2, ty: 10 }, { x: 22, y: 9, to: 'wardB', tx: 2, ty: 2 }] }
+      doors: { '2': [
+        { x:22, y:1, to:'wardA', tx:2, ty:10 },
+        { x:22, y:9, to:'wardB', tx:2, ty:2 }
+      ] }
     },
     wardA: {
       name: 'Ward A',
@@ -91,7 +81,9 @@
         "1.......................1",
         "1111111111111111111111111"
       ],
-      doors: { '2': [{ x: 1, y: 1, to: 'entry', tx: 21, ty: 9 }] }
+      doors: { '2': [
+        { x:1, y:1, to:'entry', tx:21, ty:9 }
+      ] }
     },
     wardB: {
       name: 'Ward B',
@@ -109,7 +101,9 @@
         "1.......................1",
         "1111111111111111111111111"
       ],
-      doors: { '2': [{ x: 1, y: 1, to: 'entry', tx: 21, ty: 1 }] }
+      doors: { '2': [
+        { x:1, y:1, to:'entry', tx:21, ty:1 }
+      ] }
     }
   };
 
@@ -118,10 +112,10 @@
     const tiles = Array.from({ length: h }, (_, y) =>
       Array.from({ length: w }, (_, x) => {
         const ch = r.grid[y][x];
-        if (ch === '1') return { t: 1 };
-        if (ch === '2') return { t: 2 };
-        if (ch === '3') return { t: 3, idx: -1 };
-        return { t: 0 };
+        if (ch === '1') return { t:1 };
+        if (ch === '2') return { t:2 };
+        if (ch === '3') return { t:3, idx:-1 };
+        return { t:0 };
       })
     );
     let n = 0;
@@ -134,12 +128,18 @@
   const R = {};
   for (const id in rooms) R[id] = { ...rooms[id], ...parseRoom(rooms[id]) };
 
+  // Look up a door at a tile
+  function getDoorAt(roomId, x, y) {
+    const list = rooms[roomId]?.doors?.['2'] || [];
+    return list.find(d => d.x === x && d.y === y) || null;
+  }
+
   let state = {
     room: 'entry',
     x: 3, y: 9,
     seen: new Set(),
     showText: null,
-    keyHeld: { left: false, right: false, up: false, down: false }
+    keyHeld: { left:false, right:false, up:false, down:false }
   };
 
   // Audio unlock
@@ -152,37 +152,35 @@
       bgm.play().catch(() => {});
     }
   }
-  window.addEventListener('keydown', armAudio, { once: true });
-  window.addEventListener('pointerdown', armAudio, { once: true });
+  window.addEventListener('keydown', armAudio, { once:true });
+  window.addEventListener('pointerdown', armAudio, { once:true });
 
-  // Input with gentle repeat
-  const keys = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down' };
-  const input = { dir: null, held: false, nextAt: 0, firstDelay: 180, repeatEvery: 110 };
+  // Input with calm repeat
+  const keys = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down', a:'left', d:'right', w:'up', s:'down' };
+  const input = { dir:null, held:false, nextAt:0, firstDelay:180, repeatEvery:110 };
 
   function setDirection(dir) {
     input.dir = dir;
     input.held = !!dir;
-    input.nextAt = 0;
+    input.nextAt = 0;        // immediate first step
   }
 
   window.addEventListener('keydown', e => {
-    const k = keys[e.key];
-    if (!k) return;
+    const k = keys[e.key]; if (!k) return;
     e.preventDefault();
     state.keyHeld[k] = true;
     setDirection(k);
   });
   window.addEventListener('keyup', e => {
-    const k = keys[e.key];
-    if (!k) return;
+    const k = keys[e.key]; if (!k) return;
     e.preventDefault();
     state.keyHeld[k] = false;
     if (input.dir === k && !anyHeld()) setDirection(null);
     else if (input.dir === k) setDirection(firstHeld());
   });
 
-  // D-pad for mouse and touch
-  (function(){
+  // D-pad, mouse and touch
+  (function () {
     let activeDir = null;
     function press(dir){ if (!dir) return; state.keyHeld[dir] = true; activeDir = dir; setDirection(dir); }
     function release(){ if (activeDir){ state.keyHeld[activeDir] = false; activeDir = null; if (!anyHeld()) setDirection(null); else setDirection(firstHeld()); } }
@@ -198,41 +196,63 @@
 
   function roomTile(roomId, x, y) {
     const r = R[roomId];
-    if (x < 0 || y < 0 || x >= r.w || y >= r.h) return { t: 1 };
+    if (x < 0 || y < 0 || x >= r.w || y >= r.h) return { t:1 };
     return r.tiles[y][x];
   }
 
+  // Teleport if standing on a door
+  function checkDoorHere() {
+    const door = getDoorAt(state.room, state.x, state.y);
+    if (door) {
+      state.room = door.to;
+      state.x = door.tx; state.y = door.ty;
+      hud.textContent = R[state.room].name + " - arrow keys or on screen arrows to move";
+      return true;
+    }
+    return false;
+  }
+
+  // Try one step
   function tryStep(dx, dy) {
     const nx = state.x + dx, ny = state.y + dy;
     const t = roomTile(state.room, nx, ny);
-    if (t.t === 1) return;
-    if (t.t === 2) {
-      const rd = rooms[state.room].doors['2'] || [];
-      const hit = rd.find(d => d.x === nx && d.y === ny);
-      if (hit) {
-        state.room = hit.to;
-        state.x = hit.tx; state.y = hit.ty;
-        hud.textContent = R[state.room].name + " - arrow keys or on screen arrows to move";
-        return;
-      }
+
+    if (t.t === 1) return; // wall
+
+    // Door on the next tile
+    const door = (t.t === 2) ? getDoorAt(state.room, nx, ny) : null;
+    if (door) {
+      state.room = door.to;
+      state.x = door.tx; state.y = door.ty;
+      hud.textContent = R[state.room].name + " - arrow keys or on screen arrows to move";
+      return;
     }
+
+    // Note on the next tile, show modal and do not step onto it
     if (t.t === 3) {
       const key = `${state.room}:${nx},${ny}`;
       if (!state.seen.has(key)) state.seen.add(key);
       state.showText = notes[t.idx];
-      return; // stop on the note tile, show modal
+      return;
     }
+
+    // Normal move
     state.x = nx; state.y = ny;
   }
 
   function stepInput(now) {
+    // While a note is visible, the next fresh press closes it, no move on that frame
     if (state.showText) {
       if (input.held && input.nextAt === 0) {
-        state.showText = null;                 // close on the next fresh press
-        input.nextAt = now + input.firstDelay; // then wait before repeating
+        state.showText = null;
+        input.nextAt = now + input.firstDelay;
       }
       return;
     }
+
+    // If we landed on a door from a previous step, auto-teleport now as well
+    if (checkDoorHere()) return;
+
     if (!input.dir) return;
 
     let dx = 0, dy = 0;
@@ -241,10 +261,18 @@
     else if (input.dir === 'up') dy = -1;
     else if (input.dir === 'down') dy = 1;
 
-    if (input.nextAt === 0) { tryStep(dx, dy); input.nextAt = now + input.firstDelay; return; }
-    if (now >= input.nextAt && input.held) { tryStep(dx, dy); input.nextAt = now + input.repeatEvery; }
+    if (input.nextAt === 0) {
+      tryStep(dx, dy);
+      input.nextAt = now + input.firstDelay;
+      return;
+    }
+    if (now >= input.nextAt && input.held) {
+      tryStep(dx, dy);
+      input.nextAt = now + input.repeatEvery;
+    }
   }
 
+  // ---------- Rendering ----------
   function drawRoom() {
     const r = R[state.room];
     ctx.fillStyle = C.floor;
@@ -280,17 +308,13 @@
   }
 
   function drawTextOverlay(text) {
-    // All numbers in base game pixels. Transform handles the scale and DPR.
     const w = BASE_W - 20, x = 10, y = BASE_H - 60, h = 50;
     ctx.fillStyle = C.textBg; ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = '#22262f'; ctx.strokeRect(x, y, w, h);
-
-    // Sharper text - use slightly larger font and align to integers
     ctx.textBaseline = 'top';
     ctx.fillStyle = C.text;
     ctx.font = '10px monospace';
     wrapText(text, x + 8, y + 10, w - 16, 12);
-
     ctx.font = '8px monospace';
     ctx.fillText('Press a move key to close', x + 8, y + h - 12);
   }
@@ -320,11 +344,9 @@
   }
 
   function init() {
-    // Set initial CSS size to the base aspect. JS will scale it up crisply.
     canvas.width = BASE_W;
     canvas.height = BASE_H;
     resizeCanvas();
-
     hud.textContent = R[state.room].name + " - arrow keys or on screen arrows to move";
     loop();
   }
