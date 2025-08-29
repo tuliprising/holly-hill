@@ -68,7 +68,8 @@ html, body {
   font: 18px ui-monospace, Menlo, Consolas, monospace;
 }
 
-/* Hide d-pad on larger screens, canvas plus HUD only */
+/* Hide d-pad on larger screens, canvas plus HUD only
 @media (min-width: 700px) {
   #dpad { display: none; }
 }
+*/
