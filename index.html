@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Holly Hill</title>
+  <link rel="preload" href="assets/holly-hill.mp3" as="audio">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="hollyhill-game">
+    <canvas id="game" width="260" height="180"></canvas>
+    <div id="hud"></div>
+    <div id="dpad" aria-label="controls">
+      <button data-dir="up">▲</button>
+      <div class="lr">
+        <button data-dir="left">◀</button>
+        <button data-dir="right">▶</button>
+      </div>
+      <button data-dir="down">▼</button>
+    </div>
+  </div>
+
+  <audio id="bgm" src="assets/holly-hill.mp3" loop></audio>
+  <script src="game.js"></script>
+</body>
+</html>
