@@ -35,13 +35,27 @@
     vignette:'rgba(0,0,0,0.25)'
   };
 
-  const notes = [
-    "You keep trying the same door, expecting a different hallway.",
-    "Silence is not safety. It is only quiet.",
-    "Your anger was a map. You threw it away to be polite.",
-    "There was no monster under the bed. You crawled under on your own.",
-    "The window is not locked. You are."
-  ];
+  // ----- Room specific notes -----
+  const ROOM_NOTES = {
+    entry: [
+      "You were admitted for being too loud in a quiet room.",
+      "The clipboard spelled your name correctly, you still did not recognize it.",
+      "The hallway repeats, the footsteps do not.",
+      "They asked how you were sleeping. You said, with the lights on."
+    ],
+    wardA: [
+      "You traded honesty for approval, a poor exchange rate.",
+      "Your reflection kept the secrets you confessed.",
+      "The polite version of you signed the forms.",
+      "The lock clicks even when the door is open."
+    ],
+    wardB: [
+      "You saved yourself in a story, not in a room.",
+      "You rehearsed goodbye for years, you still forgot your lines.",
+      "If the truth is heavy, set it down, then pick it up again.",
+      "Silence is not safety, it is only quiet."
+    ]
+  };
 
   const rooms = {
     entry: {
@@ -60,9 +74,12 @@
         "1.......................1",
         "1111111111111111111111111"
       ],
+      // Doors at exact tile coords found in the grid above:
+      // (23,1) top-right leads to Ward A, spawn just inside at (2,1)
+      // (21,9) mid-right leads to Ward B, spawn just inside at (2,1)
       doors: { '2': [
-        { x:22, y:1, to:'wardA', tx:2, ty:10 },
-        { x:22, y:9, to:'wardB', tx:2, ty:2 }
+        { x:23, y:1, to:'wardA', tx:2,  ty:1 },
+        { x:21, y:9, to:'wardB', tx:2,  ty:1 }
       ] }
     },
     wardA: {
@@ -81,8 +98,9 @@
         "1.......................1",
         "1111111111111111111111111"
       ],
+      // Only door at (1,1) back to entry, spawn just inside left of entry door at (22,1)
       doors: { '2': [
-        { x:1, y:1, to:'entry', tx:21, ty:9 }
+        { x:1,  y:1, to:'entry', tx:22, ty:1 }
       ] }
     },
     wardB: {
@@ -101,34 +119,37 @@
         "1.......................1",
         "1111111111111111111111111"
       ],
+      // Only door at (1,1) back to entry, spawn just inside left of entry B-door at (20,9)
       doors: { '2': [
-        { x:1, y:1, to:'entry', tx:21, ty:1 }
+        { x:1,  y:1, to:'entry', tx:20, ty:9 }
       ] }
     }
   };
 
-  function parseRoom(r) {
+  function parseRoom(r, roomId) {
     const h = r.grid.length, w = r.grid[0].length;
+    const roomNotes = ROOM_NOTES[roomId] || [];
+    let noteIndex = 0;
+
     const tiles = Array.from({ length: h }, (_, y) =>
       Array.from({ length: w }, (_, x) => {
         const ch = r.grid[y][x];
         if (ch === '1') return { t:1 };
         if (ch === '2') return { t:2 };
-        if (ch === '3') return { t:3, idx:-1 };
+        if (ch === '3') {
+          const idx = noteIndex % roomNotes.length;
+          noteIndex++;
+          return { t:3, idx };
+        }
         return { t:0 };
       })
     );
-    let n = 0;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      if (tiles[y][x].t === 3) { tiles[y][x].idx = n % notes.length; n++; }
-    }
     return { w, h, tiles };
   }
 
   const R = {};
-  for (const id in rooms) R[id] = { ...rooms[id], ...parseRoom(rooms[id]) };
+  for (const id in rooms) R[id] = { ...rooms[id], ...parseRoom(rooms[id], id) };
 
-  // Look up a door at a tile
   function getDoorAt(roomId, x, y) {
     const list = rooms[roomId]?.doors?.['2'] || [];
     return list.find(d => d.x === x && d.y === y) || null;
@@ -232,7 +253,8 @@
     if (t.t === 3) {
       const key = `${state.room}:${nx},${ny}`;
       if (!state.seen.has(key)) state.seen.add(key);
-      state.showText = notes[t.idx];
+      const roomNotes = ROOM_NOTES[state.room] || [];
+      state.showText = roomNotes[ R[state.room].tiles[ny][nx].idx % roomNotes.length ];
       return;
     }
 
