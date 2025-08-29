@@ -113,31 +113,55 @@
     keyHeld: {left:false,right:false,up:false,down:false}
   };
 
-  // Start audio on first user gesture
+  // Audio unlock on first user gesture
   let audioArmed = false;
   function armAudio() {
     if (audioArmed) return;
     audioArmed = true;
-    bgm.volume = 0.85;
-    bgm.play().catch(()=>{});
+    if (bgm && bgm.src) {
+      bgm.volume = 0.85;
+      bgm.play().catch(()=>{});
+    }
   }
   window.addEventListener('keydown', armAudio, { once:true });
   window.addEventListener('pointerdown', armAudio, { once:true });
 
-  // Input
+  // Keyboard input
   const keys = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down', a:'left', d:'right', w:'up', s:'down' };
   window.addEventListener('keydown', e => { const k = keys[e.key]; if (!k) return; e.preventDefault(); state.keyHeld[k] = true; });
   window.addEventListener('keyup',   e => { const k = keys[e.key]; if (!k) return; e.preventDefault(); state.keyHeld[k] = false; });
 
-  dpad.addEventListener('touchstart', e => {
-    const btn = e.target.closest('button'); if (!btn) return;
-    e.preventDefault(); state.keyHeld[btn.dataset.dir] = true;
-  }, {passive:false});
-  dpad.addEventListener('touchend', e => {
-    const btn = e.target.closest('button'); if (!btn) return;
-    e.preventDefault(); state.keyHeld[btn.dataset.dir] = false;
-  }, {passive:false});
-  dpad.addEventListener('touchcancel', () => { state.keyHeld = {left:false,right:false,up:false,down:false}; });
+  // D-pad input, unified for desktop and mobile
+  (function(){
+    let activeDir = null;
+
+    function press(dir){
+      if (!dir) return;
+      state.keyHeld[dir] = true;
+      activeDir = dir;
+    }
+    function release(){
+      if (activeDir) {
+        state.keyHeld[activeDir] = false;
+        activeDir = null;
+      }
+    }
+
+    dpad.addEventListener('pointerdown', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      e.preventDefault();
+      press(btn.dataset.dir);
+    });
+
+    // Release on any pointer up or when focus changes
+    window.addEventListener('pointerup', release);
+    window.addEventListener('pointercancel', release);
+    window.addEventListener('blur', release);
+
+    // Avoid context menu on long press or right click
+    dpad.addEventListener('contextmenu', e => e.preventDefault());
+  })();
 
   function roomTile(roomId, x, y) {
     const r = R[roomId];
@@ -246,7 +270,7 @@
   function init() {
     canvas.width = VIEW_W*TILE;
     canvas.height = VIEW_H*TILE;
-    hud.textContent = R[state.room].name + " — arrow keys to move";
+    hud.textContent = R[state.room].name + " — arrow keys or on screen arrows to move";
     loop();
   }
 
