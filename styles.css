@@ -73,3 +73,9 @@ html, body {
   #dpad { display: none; }
 }
 */
+
+#dpad, #dpad * { 
+  user-select: none;
+  -webkit-user-select: none;
+}
+
