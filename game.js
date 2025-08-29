@@ -1,12 +1,41 @@
 (function () {
   const TILE = 10, VIEW_W = 26, VIEW_H = 18;
+  const BASE_W = VIEW_W * TILE;   // 260
+  const BASE_H = VIEW_H * TILE;   // 180
+
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d', { alpha: false });
   const hud = document.getElementById('hud');
   const bgm = document.getElementById('bgm');
   const dpad = document.getElementById('dpad');
 
-  ctx.imageSmoothingEnabled = false;
+  // ---------- HiDPI scaling for crisp pixels and text ----------
+  function resizeCanvas() {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    // How wide is the canvas on the page in CSS pixels
+    const cssW = canvas.clientWidth || BASE_W;
+    const scale = cssW / BASE_W;
+
+    // Keep aspect ratio in CSS
+    const cssH = Math.round(BASE_H * scale);
+    canvas.style.height = cssH + 'px';
+
+    // Increase internal resolution by DPR and the layout scale
+    canvas.width  = Math.round(BASE_W * scale * dpr);
+    canvas.height = Math.round(BASE_H * scale * dpr);
+
+    // Draw using game units, scaled once to match CSS and DPR
+    ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+
+    // No smoothing for pixel art
+    ctx.imageSmoothingEnabled = false;
+  }
+
+  // Recompute when layout or zoom changes
+  window.addEventListener('resize', resizeCanvas);
+  // Some browsers fire this when zooming
+  window.matchMedia && matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener?.('change', resizeCanvas);
 
   const C = {
     floor: '#12131a',
@@ -29,7 +58,7 @@
 
   const rooms = {
     entry: {
-      name: 'Admission',
+      name: 'Admit',
       grid: [
         "1111111111111111111111111",
         "1..............3.......21",
@@ -109,39 +138,31 @@
     room: 'entry',
     x: 3, y: 9,
     seen: new Set(),
-    showText: null,          // note text, if any
+    showText: null,
     keyHeld: { left: false, right: false, up: false, down: false }
   };
 
-  // ---- Audio unlock on first gesture ----
+  // Audio unlock
   let audioArmed = false;
   function armAudio() {
     if (audioArmed) return;
     audioArmed = true;
     if (bgm && bgm.src) {
       bgm.volume = 0.85;
-      bgm.play().catch(() => { });
+      bgm.play().catch(() => {});
     }
   }
   window.addEventListener('keydown', armAudio, { once: true });
   window.addEventListener('pointerdown', armAudio, { once: true });
 
-  // ---- Input system with gentle repeat ----
-  // One press = one step. Holding repeats after a delay at a steady cadence.
+  // Input with gentle repeat
   const keys = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down' };
-
-  const input = {
-    dir: null,           // 'left' | 'right' | 'up' | 'down' | null
-    held: false,
-    nextAt: 0,           // timestamp when next step may occur
-    firstDelay: 180,     // ms before first repeat
-    repeatEvery: 110     // ms between repeats
-  };
+  const input = { dir: null, held: false, nextAt: 0, firstDelay: 180, repeatEvery: 110 };
 
   function setDirection(dir) {
     input.dir = dir;
     input.held = !!dir;
-    input.nextAt = 0;    // allow immediate step
+    input.nextAt = 0;
   }
 
   window.addEventListener('keydown', e => {
@@ -151,145 +172,89 @@
     state.keyHeld[k] = true;
     setDirection(k);
   });
-
   window.addEventListener('keyup', e => {
     const k = keys[e.key];
     if (!k) return;
     e.preventDefault();
     state.keyHeld[k] = false;
-    if (input.dir === k && !anyHeld()) {
-      setDirection(null);
-    } else if (input.dir === k) {
-      // switch to another held direction, if any
-      setDirection(firstHeld());
-    }
+    if (input.dir === k && !anyHeld()) setDirection(null);
+    else if (input.dir === k) setDirection(firstHeld());
   });
 
-  // D-pad, unified pointer handlers for desktop and mobile
-  (function () {
+  // D-pad for mouse and touch
+  (function(){
     let activeDir = null;
-
-    function press(dir) {
-      if (!dir) return;
-      state.keyHeld[dir] = true;
-      activeDir = dir;
-      setDirection(dir);
-    }
-    function release() {
-      if (activeDir) {
-        state.keyHeld[activeDir] = false;
-        activeDir = null;
-        if (!anyHeld()) setDirection(null);
-        else setDirection(firstHeld());
-      }
-    }
-
-    dpad.addEventListener('pointerdown', e => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      e.preventDefault();
-      press(btn.dataset.dir);
-    });
+    function press(dir){ if (!dir) return; state.keyHeld[dir] = true; activeDir = dir; setDirection(dir); }
+    function release(){ if (activeDir){ state.keyHeld[activeDir] = false; activeDir = null; if (!anyHeld()) setDirection(null); else setDirection(firstHeld()); } }
+    dpad.addEventListener('pointerdown', e => { const btn = e.target.closest('button'); if (!btn) return; e.preventDefault(); press(btn.dataset.dir); });
     window.addEventListener('pointerup', release);
     window.addEventListener('pointercancel', release);
     window.addEventListener('blur', release);
     dpad.addEventListener('contextmenu', e => e.preventDefault());
   })();
 
-  function anyHeld() {
-    const k = state.keyHeld;
-    return k.left || k.right || k.up || k.down;
-  }
-  function firstHeld() {
-    const k = state.keyHeld;
-    return k.left ? 'left' : k.right ? 'right' : k.up ? 'up' : k.down ? 'down' : null;
-  }
+  function anyHeld(){ const k = state.keyHeld; return k.left || k.right || k.up || k.down; }
+  function firstHeld(){ const k = state.keyHeld; return k.left?'left':k.right?'right':k.up?'up':k.down?'down':null; }
 
-  // ---- Map helpers ----
   function roomTile(roomId, x, y) {
     const r = R[roomId];
     if (x < 0 || y < 0 || x >= r.w || y >= r.h) return { t: 1 };
     return r.tiles[y][x];
   }
 
-  // Attempt a single step (one tile)
   function tryStep(dx, dy) {
     const nx = state.x + dx, ny = state.y + dy;
     const t = roomTile(state.room, nx, ny);
-
-    // Wall
     if (t.t === 1) return;
-
-    // Door
     if (t.t === 2) {
       const rd = rooms[state.room].doors['2'] || [];
       const hit = rd.find(d => d.x === nx && d.y === ny);
       if (hit) {
         state.room = hit.to;
         state.x = hit.tx; state.y = hit.ty;
-        hud.textContent = R[state.room].name + " — arrow keys or on screen arrows to move";
+        hud.textContent = R[state.room].name + " - arrow keys or on screen arrows to move";
         return;
       }
     }
-
-    // Note
     if (t.t === 3) {
       const key = `${state.room}:${nx},${ny}`;
       if (!state.seen.has(key)) state.seen.add(key);
       state.showText = notes[t.idx];
-      // Do not move onto the tile when a note appears, feels more intentional
-      return;
+      return; // stop on the note tile, show modal
     }
-
-    // Normal move
     state.x = nx; state.y = ny;
   }
 
   function stepInput(now) {
-    // If a note is showing, wait until the next **new** press to clear it, then bail this frame
     if (state.showText) {
       if (input.held && input.nextAt === 0) {
-        // We just registered a fresh press, so close the note and consume the press without moving
-        state.showText = null;
-        input.nextAt = now + input.firstDelay; // start repeat window
+        state.showText = null;                 // close on the next fresh press
+        input.nextAt = now + input.firstDelay; // then wait before repeating
       }
       return;
     }
-
     if (!input.dir) return;
 
-    // Determine dx,dy from direction
     let dx = 0, dy = 0;
     if (input.dir === 'left') dx = -1;
     else if (input.dir === 'right') dx = 1;
     else if (input.dir === 'up') dy = -1;
     else if (input.dir === 'down') dy = 1;
 
-    // Immediate step on first press
-    if (input.nextAt === 0) {
-      tryStep(dx, dy);
-      input.nextAt = now + input.firstDelay;
-      return;
-    }
-
-    // Repeats while held
-    if (now >= input.nextAt && input.held) {
-      tryStep(dx, dy);
-      input.nextAt = now + input.repeatEvery;
-    }
+    if (input.nextAt === 0) { tryStep(dx, dy); input.nextAt = now + input.firstDelay; return; }
+    if (now >= input.nextAt && input.held) { tryStep(dx, dy); input.nextAt = now + input.repeatEvery; }
   }
 
-  // ---- Rendering ----
   function drawRoom() {
     const r = R[state.room];
     ctx.fillStyle = C.floor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, BASE_W, BASE_H);
     for (let y = 0; y < r.h; y++) {
       for (let x = 0; x < r.w; x++) {
         const t = r.tiles[y][x], px = x * TILE, py = y * TILE;
         if (t.t === 1) {
           ctx.fillStyle = C.wall; ctx.fillRect(px, py, TILE, TILE);
-          ctx.fillStyle = '#3a3f4d'; if ((x + y) % 2 === 0) ctx.fillRect(px, py + TILE - 2, TILE, 2);
+          ctx.fillStyle = '#3a3f4d'; if (((x + y) % 2) === 0) ctx.fillRect(px, py + TILE - 2, TILE, 2);
         } else if (t.t === 2) {
           ctx.fillStyle = C.door; ctx.fillRect(px, py, TILE, TILE);
           ctx.fillStyle = '#9ca3af'; ctx.fillRect(px + 3, py + 3, 4, 4);
@@ -308,19 +273,26 @@
 
   function drawVignette() {
     ctx.fillStyle = C.vignette;
-    ctx.fillRect(0, 0, canvas.width, 2);
-    ctx.fillRect(0, canvas.height - 2, canvas.width, 2);
-    ctx.fillRect(0, 0, 2, canvas.height);
-    ctx.fillRect(canvas.width - 2, 0, 2, canvas.height);
+    ctx.fillRect(0, 0, BASE_W, 2);
+    ctx.fillRect(0, BASE_H - 2, BASE_W, 2);
+    ctx.fillRect(0, 0, 2, BASE_H);
+    ctx.fillRect(BASE_W - 2, 0, 2, BASE_H);
   }
 
   function drawTextOverlay(text) {
-    const w = canvas.width - 20, x = 10, y = canvas.height - 60, h = 50;
+    // All numbers in base game pixels. Transform handles the scale and DPR.
+    const w = BASE_W - 20, x = 10, y = BASE_H - 60, h = 50;
     ctx.fillStyle = C.textBg; ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = '#22262f'; ctx.strokeRect(x, y, w, h);
-    ctx.fillStyle = C.text; ctx.font = '8px monospace';
-    wrapText(text, x + 8, y + 14, w - 16, 10);
-    ctx.font = '7px monospace'; ctx.fillText('Press a move key to close', x + 8, y + h - 6);
+
+    // Sharper text - use slightly larger font and align to integers
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = C.text;
+    ctx.font = '10px monospace';
+    wrapText(text, x + 8, y + 10, w - 16, 12);
+
+    ctx.font = '8px monospace';
+    ctx.fillText('Press a move key to close', x + 8, y + h - 12);
   }
 
   function wrapText(str, x, y, maxWidth, lineHeight) {
@@ -328,13 +300,16 @@
     for (let i = 0; i < words.length; i++) {
       const test = line + words[i] + ' ';
       if (ctx.measureText(test).width > maxWidth && i > 0) {
-        ctx.fillText(line, x, y); line = words[i] + ' '; y += lineHeight;
-      } else { line = test; }
+        ctx.fillText(line, Math.round(x), Math.round(y));
+        line = words[i] + ' ';
+        y += lineHeight;
+      } else {
+        line = test;
+      }
     }
-    ctx.fillText(line, x, y);
+    ctx.fillText(line, Math.round(x), Math.round(y));
   }
 
-  // ---- Main loop ----
   function loop(now = performance.now()) {
     stepInput(now);
     drawRoom();
@@ -345,9 +320,12 @@
   }
 
   function init() {
-    canvas.width = VIEW_W * TILE;
-    canvas.height = VIEW_H * TILE;
-    hud.textContent = R[state.room].name + " — arrows to move";
+    // Set initial CSS size to the base aspect. JS will scale it up crisply.
+    canvas.width = BASE_W;
+    canvas.height = BASE_H;
+    resizeCanvas();
+
+    hud.textContent = R[state.room].name + " - arrow keys or on screen arrows to move";
     loop();
   }
 
