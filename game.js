@@ -29,7 +29,7 @@
 
   const rooms = {
     entry: {
-      name: 'Admit',
+      name: 'Admission',
       grid: [
         "1111111111111111111111111",
         "1..............3.......21",
@@ -270,7 +270,7 @@
   function init() {
     canvas.width = VIEW_W*TILE;
     canvas.height = VIEW_H*TILE;
-    hud.textContent = R[state.room].name + " — arrow keys or on screen arrows to move";
+    hud.textContent = R[state.room].name + " — arrow keys to move";
     loop();
   }
 
