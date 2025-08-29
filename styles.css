@@ -1,4 +1,10 @@
 :root { color-scheme: dark; }
+
+html, body { 
+  height: 100%;
+  overflow: hidden;   /* kill scrollbars inside the iframe */
+}
+
 html, body {
   margin: 0;
   background: #0d0d12;
