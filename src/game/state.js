@@ -2,6 +2,7 @@ import { buildRoom, getDoorAt, noteText } from './maps.js';
 
 export function createState() {
   const state = {
+    mode: 'title', // 'title' | 'play' | 'note' | 'dialogue' (future)
     room: buildRoom('entry'),
     roomId: 'entry',
     player: { x:3, y:9 },
@@ -13,13 +14,15 @@ export function createState() {
 }
 
 export function setDirection(state, dir) {
+  if (state.mode !== 'play') return; // ignore movement until game starts
   state.input.dir = dir;
   state.input.held = !!dir;
   state.input.nextAt = 0;  // allow immediate step
 }
 
 export function stepLogic(state, now) {
-  // Close modal on next fresh press
+  // Title screen does not advance game logic
+  if (state.mode === 'title') return;
   if (state.showText) {
     if (state.input.held && state.input.nextAt === 0) {
       state.showText = null;
