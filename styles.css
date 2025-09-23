@@ -67,14 +67,14 @@ html, body {
 }
 
 #music-header h1 {
-  margin: 16;
-  font-size: 36px;
+  margin: 12;
+  font-size: 32px;
   color: #e5e7eb;
 }
 
 #music-header .subtitle {
   margin: 4px 0 16px; /* small gap above and below */
-  font-size: 24px;
+  font-size: 20px;
   font-style: italic;
   color: #9ca3af;
 }
