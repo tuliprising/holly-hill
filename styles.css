@@ -17,7 +17,7 @@ html, body {
 }
 
 #game {
-  margin: 12px;
+  margin: 0px;
   width: 100%;
   height: auto;
   background: #0d0d12;
@@ -68,7 +68,7 @@ html, body {
 }
 
 #music-header h1 {
-  margin: 12;
+  margin: 12px;
   font-size: 32px;
   color: #e5e7eb;
 }
