@@ -60,8 +60,26 @@ html, body {
   /* #dpad { display: none; } */
 }
 
+
+#music-header {
+  text-align: center;
+  margin-bottom: 32px; /* gap between links and game */
+}
+
+#music-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #e5e7eb;
+}
+
+#music-header .subtitle {
+  margin: 4px 0 16px; /* small gap above and below */
+  font-size: 14px;
+  font-style: italic;
+  color: #9ca3af;
+}
+
 #music-links {
-  margin-top: 16px;
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -77,3 +95,4 @@ html, body {
 #music-links a:hover {
   text-decoration: underline;
 }
+
