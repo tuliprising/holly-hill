@@ -59,3 +59,21 @@ html, body {
 @media (min-width: 700px) { /* hide on desktop if you prefer */
   /* #dpad { display: none; } */
 }
+
+#music-links {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 14px;
+}
+
+#music-links a {
+  color: #b2f5ea;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+#music-links a:hover {
+  text-decoration: underline;
+}
