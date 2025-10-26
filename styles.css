@@ -1,22 +1,24 @@
 :root { color-scheme: dark; }
 
+/* Keep everything inside the viewport */
 html, body {
   margin: 0;
+  height: 100%;
+  min-height: 100%;
   background: #0d0d12;
   font-family: ui-monospace, Menlo, Consolas, monospace;
   color: #e5e7eb;
-  min-height: 100%;
-  overflow-x: hidden;   /* keep horizontal clean */
-  overflow-y: auto;     /* allow vertical scroll on the standalone page */
+  overflow: hidden; /* no vertical scroll */
 }
 
 #hollyhill-game {
   max-width: 100%;
-  margin: 24px auto;
+  margin: 12px auto; /* tighter to save height */
   text-align: center;
   overflow: hidden;
 }
 
+/* Canvas size is set by JS to fit the screen */
 #game {
   margin: 0;
   background: #0d0d12;
@@ -24,24 +26,28 @@ html, body {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   display: block;
-  /* width and height are set by JS so the whole UI fits on one screen */
 }
 
+#hud {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #d5d7e0;
+  margin-top: 6px;
+}
 
-#hud { font-size: 12px; line-height: 1.4; color:#d5d7e0; margin-top: 8px; }
-
+/* D-pad */
 #dpad, #dpad * { user-select: none; -webkit-user-select: none; }
 
 #dpad {
-  margin-top: 12px;
+  margin-top: 8px;
   display: grid;
-  grid-template-columns: 56px 56px 56px;
-  grid-template-rows: 56px 56px 56px;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto auto;
   grid-template-areas:
     ". up ."
     "left . right"
     ". down .";
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
   touch-action: none;
@@ -52,49 +58,44 @@ html, body {
 #dpad [data-dir="down"]  { grid-area: down; }
 
 #dpad button {
-  width: 56px; height: 56px;
+  width: clamp(40px, 8.5vw, 56px);
+  height: clamp(40px, 8.5vw, 56px);
   border: 1px solid #333; border-radius: 8px;
   background: #1a1c24; color: #e5e7eb;
   font: 18px ui-monospace, Menlo, Consolas, monospace;
 }
 
-@media (min-width: 700px) { /* hide on desktop if you prefer */
-  /* #dpad { display: none; } */
-}
-
-
+/* Header tightened to free vertical space */
 #music-header {
   text-align: center;
-  margin-bottom: 32px; /* gap between links and game */
+  margin: 8px 12px 12px;
 }
-
 #music-header h1 {
-  margin: 12px;
-  font-size: 32px;
+  margin: 6px;
+  font-size: 28px;
   color: #e5e7eb;
 }
-
 #music-header .subtitle {
-  margin: 4px 0 16px; /* small gap above and below */
-  font-size: 20px;
+  margin: 2px 0 10px;
+  font-size: 16px;
   font-style: italic;
   color: #9ca3af;
 }
 
+/* Link row that wraps on small screens */
 #music-links {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 14px;
   font-size: 14px;
+  flex-wrap: wrap;
+  padding: 0 8px;
 }
-
 #music-links a {
   color: #b2f5ea;
   text-decoration: none;
   font-weight: bold;
 }
-
 #music-links a:hover {
   text-decoration: underline;
 }
-
