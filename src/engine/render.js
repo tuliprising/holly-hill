@@ -132,7 +132,7 @@ export function drawNote(ctx, baseW, baseH, text) {
 
   // Body text, smaller and colder
   ctx.textBaseline = 'top';
-  ctx.fillStyle = '#0c0214';
+  ctx.fillStyle = '#050108';
   ctx.font = bodyFont;
 
   let ty = y + padTop;
