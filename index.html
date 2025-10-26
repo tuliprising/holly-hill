@@ -37,7 +37,27 @@
   </div>
 
   <audio id="bgm" src="" loop></audio>
-  <script type="module" src="/src/main.js"></script>
+  
+
+
+
+  <script type="module">
+  // Try to load your app. If this import fails, the next script will show a message.
+  import "/src/main.js";
+  window.__hhModuleLoaded = true;
+</script>
+<script>
+  // If the module did not set the flag within 800ms, show a visible hint.
+  setTimeout(function(){
+    if (!window.__hhModuleLoaded) {
+      var el = document.createElement('pre');
+      el.textContent = "Could not load /src/main.js. Open this URL in your browser. If it 404s, the path or folder name is wrong.";
+      el.style.cssText = "white-space:pre-wrap; background:#331; color:#ffdede; padding:10px; border:1px solid #553; max-width:960px; margin:12px auto; font:12px ui-monospace,monospace;";
+      document.body.insertBefore(el, document.body.firstChild);
+    }
+  }, 800);
+</script>
+
 
 
 
