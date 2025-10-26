@@ -24,7 +24,7 @@ export const ROOM_NOTES = {
 
 export const ROOMS = {
   entry: {
-    name: 'Admit',
+    name: 'Admissions',
     grid: [
       "1111111111111111111111111",
       "1..............3.......21",
