@@ -120,7 +120,7 @@ export function drawNote(ctx, baseW, baseH, text) {
   ctx.fillRect(x + 2, y + 2, boxW, boxH);
 
   // Dark “paper” scrap
-  ctx.fillStyle = '#0f1218';
+  ctx.fillStyle = '#151a1a';
   ctx.fillRect(x, y, boxW, boxH);
 
   // Double border, slightly mismatched
