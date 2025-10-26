@@ -1,8 +1,9 @@
+// src/main.js
 import { createLoop } from './engine/loop.js';
 import { createInput } from './engine/input.js';
 import { setupHiDPI, drawRoom, drawPlayer, drawVignette, drawNote } from './engine/render.js';
 import { armBGM } from './engine/audio.js';
-import { TILE, BASE_W, BASE_H } from './game/maps.js';
+import { TILE } from './game/maps.js';
 import { createState, setDirection, stepLogic } from './game/state.js';
 
 const canvas = document.getElementById('game');
@@ -10,15 +11,13 @@ const roomNameEl = document.getElementById('room-name');
 const dpad = document.getElementById('dpad');
 const bgm = document.getElementById('bgm');
 
-const input = createInput(dpad);
+// Create state first, since we size the canvas from the current room
 const state = createState();
+
+// Initial canvas size matches the current room tile grid
 const ctx = setupHiDPI(canvas, state.room.w * TILE, state.room.h * TILE);
 
-
-// If you still have a #hud element and want a boot message, keep this.
-// Otherwise you can remove this line safely.
-// const hud = document.getElementById('hud'); if (hud) hud.textContent = 'Booting…';
-
+const input = createInput(dpad);
 armBGM(bgm);
 
 function updateHUD() {
@@ -57,26 +56,20 @@ window.addEventListener('blur', () => {
 // Initial title render
 updateHUD();
 
-// Track room changes so the title updates when you go through doors
+// Track room changes exactly once
 let lastRoomId = state.roomId;
-
-// Keep track of which room we're currently in
-let lastRoomId = state.roomId;
-
 
 createLoop((now = performance.now()) => {
   stepLogic(state, now);
 
-  // Check if the room changed
+  // If we changed rooms, update the title and resize the canvas
   if (state.roomId !== lastRoomId) {
-    updateHUD();                           // update the room name at the top
+    updateHUD();
     lastRoomId = state.roomId;
-
-    // Resize the canvas to fit the new room
     setupHiDPI(canvas, state.room.w * TILE, state.room.h * TILE);
   }
 
-  // Draw the scene using the new room’s actual size
+  // Draw using the room's actual pixel size
   const roomW = state.room.w * TILE;
   const roomH = state.room.h * TILE;
 
@@ -85,4 +78,3 @@ createLoop((now = performance.now()) => {
   drawVignette(ctx, roomW, roomH);
   if (state.showText) drawNote(ctx, roomW, roomH, state.showText);
 });
-
