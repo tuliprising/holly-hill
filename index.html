@@ -38,5 +38,36 @@
 
   <audio id="bgm" src="" loop></audio>
   <script type="module" src="/src/main.js"></script>
+
+
+
+
+<script>
+(function(){
+  function showErr(msg){
+    var el = document.createElement('pre');
+    el.id = 'hh-error';
+    el.textContent = String(msg || 'Unknown error');
+    el.style.cssText = 'white-space:pre-wrap; background:#1a1c24; color:#ffb4b4; padding:12px; border:1px solid #442; max-width:960px; margin:12px auto; font:12px ui-monospace,monospace;';
+    document.body.insertBefore(el, document.body.firstChild);
+  }
+  window.addEventListener('error', function(e){
+    if (document.getElementById('hh-error')) return;
+    var where = e.filename ? ('\n' + e.filename + ':' + e.lineno + ':' + e.colno) : '';
+    showErr('Script error: ' + e.message + where);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    if (document.getElementById('hh-error')) return;
+    showErr('Unhandled promise rejection: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason)));
+  });
+})();
+</script>
+
+
+  
+
+
+  
+  
 </body>
 </html>
