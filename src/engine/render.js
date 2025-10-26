@@ -89,9 +89,9 @@ export function drawNote(ctx, baseW, baseH, text) {
   const padX = 8;
   const padTop = 7;
   const padBottom = 8;
-  const bodyFont = '8px monospace';   // much smaller
+  const bodyFont = '4px monospace';   // much smaller
   const bodyLH = 10;                  // line height for 8px font
-  const hintFont = '6px monospace';   // tiny hint
+  const hintFont = '3px monospace';   // tiny hint
   const hintLH = 8;
 
   // Prepare body lines to compute exact height
