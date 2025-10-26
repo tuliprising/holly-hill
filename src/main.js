@@ -15,11 +15,19 @@ const input = createInput(dpad);
 const state = createState();
 document.getElementById('hud').textContent = 'Booting…';
 
-
 armBGM(bgm);
 
-// hook input into state cadence
+// add this helper function near the top of your input listeners
+function maybeStart() {
+  if (state.mode === 'title') {
+    state.mode = 'play';
+    updateHUD();
+  }
+}
+
+// replace your existing event listeners with this version
 window.addEventListener('keydown', () => {
+  maybeStart();
   const dir = input.firstHeld();
   setDirection(state, dir);
 });
@@ -28,6 +36,7 @@ window.addEventListener('keyup', () => {
   setDirection(state, dir);
 });
 dpad.addEventListener('pointerdown', () => {
+  maybeStart();
   const dir = input.firstHeld();
   setDirection(state, dir);
 });
