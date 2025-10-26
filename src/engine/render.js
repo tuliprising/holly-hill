@@ -86,13 +86,13 @@ export function drawVignette(ctx, baseW, baseH) {
 export function drawNote(ctx, baseW, baseH, text) {
   // Visual tuning
   const maxBoxW = Math.min(160, baseW - 16); // narrower, reads like a small scrap
-  const padX = 4;
-  const padTop = 3;
-  const padBottom = 3;
+  const padX = 6;
+  const padTop = 6;
+  const padBottom = 6;
   const bodyFont = '4px monospace';   // much smaller
-  const bodyLH = 2;                  // line height for 4px font
+  const bodyLH = 4;                  // line height for 4px font
   const hintFont = '3px monospace';   // tiny hint
-  const hintLH = 2;
+  const hintLH = 4;
 
   // Prepare body lines to compute exact height
   ctx.font = bodyFont;
@@ -144,7 +144,7 @@ export function drawNote(ctx, baseW, baseH, text) {
   // Close hint, tiny
   ctx.font = hintFont;
   ctx.fillStyle = '#3d3940';
-  ctx.fillText('Press a move key to close', x + padX, y + boxH - padBottom - hintLH);
+  ctx.fillText('Press any key to close', x + padX, y + boxH - padBottom - hintLH);
 
   ctx.restore();
 }
