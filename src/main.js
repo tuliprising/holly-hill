@@ -60,16 +60,29 @@ updateHUD();
 // Track room changes so the title updates when you go through doors
 let lastRoomId = state.roomId;
 
+// Keep track of which room we're currently in
+let lastRoomId = state.roomId;
+
+
 createLoop((now = performance.now()) => {
   stepLogic(state, now);
 
+  // Check if the room changed
   if (state.roomId !== lastRoomId) {
-    updateHUD();
+    updateHUD();                           // update the room name at the top
     lastRoomId = state.roomId;
+
+    // Resize the canvas to fit the new room
+    setupHiDPI(canvas, state.room.w * TILE, state.room.h * TILE);
   }
 
-  drawRoom(ctx, state.room, TILE, BASE_W, BASE_H);
+  // Draw the scene using the new room’s actual size
+  const roomW = state.room.w * TILE;
+  const roomH = state.room.h * TILE;
+
+  drawRoom(ctx, state.room, TILE, roomW, roomH);
   drawPlayer(ctx, state.player.x, state.player.y, TILE);
-  drawVignette(ctx, BASE_W, BASE_H);
-  if (state.showText) drawNote(ctx, BASE_W, BASE_H, state.showText);
+  drawVignette(ctx, roomW, roomH);
+  if (state.showText) drawNote(ctx, roomW, roomH, state.showText);
 });
+
