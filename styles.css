@@ -5,8 +5,9 @@ html, body {
   background: #0d0d12;
   font-family: ui-monospace, Menlo, Consolas, monospace;
   color: #e5e7eb;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;   /* keep horizontal clean */
+  overflow-y: auto;     /* allow vertical scroll on the standalone page */
 }
 
 #hollyhill-game {
