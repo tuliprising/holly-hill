@@ -76,25 +76,63 @@ export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
 
   const SKIN = '#caa68e';        // skin tone
   const EYE  = '#0d0d12';        // black eyes
+  const GOWN = '#8a8f9b';        // eerie gray hospital gown
+  const HAIR = '#1b1f27';        // dark hair
 
-  // Body, same footprint as before (centered 6×6 block)
-  ctx.fillStyle = C.player;                       // keep your existing player color
-  ctx.fillRect(Math.round(px + 2*p), Math.round(py + 2*p), Math.ceil(6*p), Math.ceil(6*p));
+  // Helper to draw one simple body
+  function drawBase() {
+    // Hair (thin dark line above face)
+    ctx.fillStyle = HAIR;
+    ctx.fillRect(Math.round(px + 2*p), Math.round(py + 1*p), Math.ceil(6*p), Math.ceil(1*p));
 
-  // Eyes, two small black pixels, no other face dots
-  ctx.fillStyle = EYE;
-  ctx.fillRect(Math.round(px + 4*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
-  ctx.fillRect(Math.round(px + 6*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+    // Body / gown
+    ctx.fillStyle = GOWN;
+    ctx.fillRect(Math.round(px + 2*p), Math.round(py + 2*p), Math.ceil(6*p), Math.ceil(6*p));
 
-  // Arms, small skin pixels on each side of the body
-  ctx.fillStyle = SKIN;
-  ctx.fillRect(Math.round(px + 1*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p)); // left arm
-  ctx.fillRect(Math.round(px + 8*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p)); // right arm
+    // Arms
+    ctx.fillStyle = SKIN;
+    ctx.fillRect(Math.round(px + 1*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p));
+    ctx.fillRect(Math.round(px + 8*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p));
 
-  // Bare feet, skin colored, same one-pixel size and placement as before
-  ctx.fillRect(Math.round(px + 3*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p)); // left foot
-  ctx.fillRect(Math.round(px + 6*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p)); // right foot
+    // Bare feet
+    ctx.fillRect(Math.round(px + 3*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p));
+    ctx.fillRect(Math.round(px + 6*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p));
+  }
+
+  // --- Down-facing ---
+  if (facing === 'down') {
+    drawBase();
+    // Eyes (two black pixels centered on face)
+    ctx.fillStyle = EYE;
+    ctx.fillRect(Math.round(px + 4*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+    ctx.fillRect(Math.round(px + 6*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+  }
+
+  // --- Up-facing ---
+  else if (facing === 'up') {
+    drawBase();
+    // No visible eyes (back of head)
+    ctx.fillStyle = HAIR;
+    ctx.fillRect(Math.round(px + 2*p), Math.round(py + 2*p), Math.ceil(6*p), Math.ceil(1*p));
+  }
+
+  // --- Left-facing ---
+  else if (facing === 'left') {
+    drawBase();
+    // Single eye slightly toward left
+    ctx.fillStyle = EYE;
+    ctx.fillRect(Math.round(px + 3*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+  }
+
+  // --- Right-facing ---
+  else if (facing === 'right') {
+    drawBase();
+    // Single eye slightly toward right
+    ctx.fillStyle = EYE;
+    ctx.fillRect(Math.round(px + 6*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+  }
 }
+
 
 
 
