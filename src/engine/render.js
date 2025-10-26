@@ -72,29 +72,85 @@ export function drawRoom(ctx, room, tileSize, baseW, baseH) {
 export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
   const px = x * tileSize;
   const py = y * tileSize;
-  const p  = tileSize / 10; // 10×10 grid inside one tile
+  const p  = tileSize / 10; // 10x10 pixels per tile
 
-  const SKIN = '#caa68e';        // skin tone
-  const EYE  = '#0d0d12';        // black eyes
+  // Palette
+  const PAL = {
+    H: '#1b1f27',  // hair
+    S: '#caa68e',  // skin
+    G: '#8a8f9b',  // gown
+    g: '#6f757f',  // gown shadow
+    E: '#0d0d12',  // eye (black)
+    '.': null
+  };
 
-  // Body, same footprint as before (centered 6×6 block)
-  ctx.fillStyle = C.player;                       // keep your existing player color
-  ctx.fillRect(Math.round(px + 2*p), Math.round(py + 2*p), Math.ceil(6*p), Math.ceil(6*p));
+  // 10-wide rows, 10 rows each. No face speckles. Arms and feet are skin.
+  const SPR_DOWN = [
+    '.HHHHHH...', // hair
+    'HHHHHHHH..',
+    'HSSSSSSH..', // face
+    'HSEESSH...', // eyes are black E
+    'HSSSSSH...', // lower face
+    'SGGGGGGS..', // shoulders with arms (S ... S)
+    'GGGGGGGG..', // gown
+    'gGGGGGGg..', // hem shadow
+    'GGGGGGGG..',
+    '.S....S...'  // bare feet
+  ];
 
-  // Eyes, two small black pixels, no other face dots
-  ctx.fillStyle = EYE;
-  ctx.fillRect(Math.round(px + 4*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
-  ctx.fillRect(Math.round(px + 6*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+  const SPR_UP = [
+    '.HHHHHH...', // hair crown
+    'HHHHHHHH..',
+    'HHHHHHHH..',
+    'HGGGGGGH..', // back of head into gown
+    'SGGGGGGS..', // shoulders with arms
+    'GGGGGGGG..',
+    'GGGGGGGG..',
+    'gGGGGGGg..',
+    'GGGGGGGG..',
+    '.S....S...'  // bare feet
+  ];
 
-  // Arms, small skin pixels on each side of the body
-  ctx.fillStyle = SKIN;
-  ctx.fillRect(Math.round(px + 1*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p)); // left arm
-  ctx.fillRect(Math.round(px + 8*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p)); // right arm
+  const SPR_LEFT = [
+    '.HHHHHH...', // hair
+    'HHHHHHHH..',
+    'HSSSSSSH..', // face
+    'HSESSHH...', // single eye toward left, beard mass to right
+    'HSSSSGH...', // cheek into gown
+    'SGGGGGGG..', // arm on left
+    'GGGGGGGG..',
+    'gGGGGGGg..',
+    'GGGGGGGG..',
+    '.S...S....'  // feet slightly staggered
+  ];
 
-  // Bare feet, skin colored, same one-pixel size and placement as before
-  ctx.fillRect(Math.round(px + 3*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p)); // left foot
-  ctx.fillRect(Math.round(px + 6*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p)); // right foot
+  // Right is a horizontal flip of left
+  function flip(rows) { return rows.map(r => r.split('').reverse().join('')); }
+  const SPR_RIGHT = flip(SPR_LEFT);
+
+  const SPR =
+    facing === 'up'    ? SPR_UP :
+    facing === 'left'  ? SPR_LEFT :
+    facing === 'right' ? SPR_RIGHT :
+    SPR_DOWN;
+
+  for (let j = 0; j < 10; j++) {
+    const row = SPR[j];
+    for (let i = 0; i < 10; i++) {
+      const code = row[i];
+      const color = PAL[code];
+      if (!color) continue;
+      ctx.fillStyle = color;
+      ctx.fillRect(
+        Math.round(px + i * p),
+        Math.round(py + j * p),
+        Math.ceil(p),
+        Math.ceil(p)
+      );
+    }
+  }
 }
+
 
 
 
