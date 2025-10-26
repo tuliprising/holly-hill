@@ -6,7 +6,7 @@ import { TILE, BASE_W, BASE_H } from './game/maps.js';
 import { createState, setDirection, stepLogic } from './game/state.js';
 
 const canvas = document.getElementById('game');
-const hud = document.getElementById('hud');
+const roomNameEl = document.getElementById('room-name');
 const dpad = document.getElementById('dpad');
 const bgm = document.getElementById('bgm');
 
@@ -21,7 +21,9 @@ armBGM(bgm);
 function maybeStart() {
   if (state.mode === 'title') {
     state.mode = 'play';
-    updateHUD();
+    function updateHUD() {
+      roomNameEl.textContent = state.room.name;
+    }
   }
 }
 
@@ -52,10 +54,10 @@ window.addEventListener('blur', () => {
   setDirection(state, null);
 });
 
-// HUD update helper
 function updateHUD() {
-  hud.textContent = state.room.name + ' - arrow keys or on screen arrows to move';
+  roomNameEl.textContent = state.room.name;
 }
+
 
 updateHUD();
 
