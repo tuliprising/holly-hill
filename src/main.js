@@ -10,9 +10,10 @@ const roomNameEl = document.getElementById('room-name');
 const dpad = document.getElementById('dpad');
 const bgm = document.getElementById('bgm');
 
-const ctx = setupHiDPI(canvas, BASE_W, BASE_H);
 const input = createInput(dpad);
 const state = createState();
+const ctx = setupHiDPI(canvas, state.room.w * TILE, state.room.h * TILE);
+
 
 // If you still have a #hud element and want a boot message, keep this.
 // Otherwise you can remove this line safely.
