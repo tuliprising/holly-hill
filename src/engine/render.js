@@ -86,13 +86,13 @@ export function drawVignette(ctx, baseW, baseH) {
 export function drawNote(ctx, baseW, baseH, text) {
   // Visual tuning
   const maxBoxW = Math.min(160, baseW - 16); // narrower, reads like a small scrap
-  const padX = 8;
-  const padTop = 7;
-  const padBottom = 8;
+  const padX = 4;
+  const padTop = 3;
+  const padBottom = 3;
   const bodyFont = '4px monospace';   // much smaller
-  const bodyLH = 10;                  // line height for 8px font
+  const bodyLH = 2;                  // line height for 4px font
   const hintFont = '3px monospace';   // tiny hint
-  const hintLH = 8;
+  const hintLH = 2;
 
   // Prepare body lines to compute exact height
   ctx.font = bodyFont;
