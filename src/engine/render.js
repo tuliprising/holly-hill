@@ -82,50 +82,92 @@ export function drawVignette(ctx, baseW, baseH) {
   ctx.fillRect(baseW-2,0,2,baseH);
 }
 
+// Replace your existing drawNote with this
 export function drawNote(ctx, baseW, baseH, text) {
-  const pad = 8;
-  const maxW = baseW - 2 * pad;
-  const boxW = Math.min(180, maxW);
-  const boxH = 42; // smaller
-  const x = Math.round((baseW - boxW) / 2);
-  const y = baseH - boxH - 10;
+  // Visual tuning
+  const maxBoxW = Math.min(160, baseW - 16); // narrower, reads like a small scrap
+  const padX = 8;
+  const padTop = 7;
+  const padBottom = 8;
+  const bodyFont = '8px monospace';   // much smaller
+  const bodyLH = 10;                  // line height for 8px font
+  const hintFont = '6px monospace';   // tiny hint
+  const hintLH = 8;
 
-  // subtle rotation to feel like a taped note
+  // Prepare body lines to compute exact height
+  ctx.font = bodyFont;
+  const bodyLines = wrapLines(ctx, text, maxBoxW - padX * 2);
+
+  // Compute box size from content
+  const contentH = bodyLines.length * bodyLH;
+  const gapBeforeHint = 6;
+  const boxW = maxBoxW;
+  const boxH = padTop + contentH + gapBeforeHint + hintLH + padBottom;
+
+  // Position near bottom center
+  const x = Math.round((baseW - boxW) / 2);
+  const y = Math.round(baseH - boxH - 8);
+
   ctx.save();
-  const jitter = 0.012; // ~0.7 degrees
+
+  // Slight skew/tilt for eerie, hand-placed vibe
   ctx.translate(x + boxW / 2, y + boxH / 2);
-  ctx.rotate(jitter);
+  ctx.rotate(0.010); // ~0.57°
   ctx.translate(-(x + boxW / 2), -(y + boxH / 2));
 
-  // shadow
+  // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.fillRect(x + 2, y + 2, boxW, boxH);
 
-  // paper or wall patch
-  ctx.fillStyle = '#0f1117';
+  // Dark “paper” scrap
+  ctx.fillStyle = '#0f1218';
   ctx.fillRect(x, y, boxW, boxH);
 
-  // rough border: draw twice with slight offsets
+  // Double border, slightly mismatched
   ctx.strokeStyle = '#22262f';
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, boxW, boxH);
   ctx.strokeStyle = 'rgba(70,80,95,0.6)';
   ctx.strokeRect(x + 1, y + 1, boxW - 2, boxH - 2);
 
-  // scribble text
+  // Body text, smaller and colder
   ctx.textBaseline = 'top';
-  ctx.fillStyle = '#d8dde6';
-  ctx.font = '9px "Courier New", monospace';  // smaller than before
+  ctx.fillStyle = '#c8ced8';
+  ctx.font = bodyFont;
 
-  wrapText(ctx, text, x + 7, y + 7, boxW - 14, 11);
+  let ty = y + padTop;
+  for (const line of bodyLines) {
+    ctx.fillText(line, x + padX, ty);
+    ty += bodyLH;
+  }
 
-  // small close hint
-  ctx.font = '7px "Courier New", monospace';
-  ctx.fillStyle = '#aab3c2';
-  ctx.fillText('Press a move key to close', x + 7, y + boxH - 11);
+  // Close hint, tiny
+  ctx.font = hintFont;
+  ctx.fillStyle = '#9aa4b5';
+  ctx.fillText('Press a move key to close', x + padX, y + boxH - padBottom - hintLH);
 
   ctx.restore();
 }
+
+// New helper: wraps text and returns lines, so we can size the box precisely
+function wrapLines(ctx, str, maxWidth) {
+  const words = String(str).split(/\s+/);
+  const lines = [];
+  let line = '';
+
+  for (let i = 0; i < words.length; i++) {
+    const test = line ? line + ' ' + words[i] : words[i];
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = words[i];
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 
 
 function wrapText(ctx, str, x, y, maxWidth, lineHeight) {
