@@ -18,15 +18,15 @@ html, body {
 }
 
 #game {
-  margin: 0px;
-  width: 100%;
-  height: auto;
+  margin: 0;
   background: #0d0d12;
   border: 2px solid #222;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   display: block;
+  /* width and height are set by JS so the whole UI fits on one screen */
 }
+
 
 #hud { font-size: 12px; line-height: 1.4; color:#d5d7e0; margin-top: 8px; }
 
