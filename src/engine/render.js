@@ -83,16 +83,50 @@ export function drawVignette(ctx, baseW, baseH) {
 }
 
 export function drawNote(ctx, baseW, baseH, text) {
-  const w = baseW-20, x = 10, y = baseH-60, h = 50;
-  ctx.fillStyle = C.textBg; ctx.fillRect(x,y,w,h);
-  ctx.strokeStyle = '#22262f'; ctx.strokeRect(x,y,w,h);
+  const pad = 8;
+  const maxW = baseW - 2 * pad;
+  const boxW = Math.min(180, maxW);
+  const boxH = 42; // smaller
+  const x = Math.round((baseW - boxW) / 2);
+  const y = baseH - boxH - 10;
+
+  // subtle rotation to feel like a taped note
+  ctx.save();
+  const jitter = 0.012; // ~0.7 degrees
+  ctx.translate(x + boxW / 2, y + boxH / 2);
+  ctx.rotate(jitter);
+  ctx.translate(-(x + boxW / 2), -(y + boxH / 2));
+
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(x + 2, y + 2, boxW, boxH);
+
+  // paper or wall patch
+  ctx.fillStyle = '#0f1117';
+  ctx.fillRect(x, y, boxW, boxH);
+
+  // rough border: draw twice with slight offsets
+  ctx.strokeStyle = '#22262f';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, boxW, boxH);
+  ctx.strokeStyle = 'rgba(70,80,95,0.6)';
+  ctx.strokeRect(x + 1, y + 1, boxW - 2, boxH - 2);
+
+  // scribble text
   ctx.textBaseline = 'top';
-  ctx.fillStyle = C.text;
-  ctx.font = '10px monospace';
-  wrapText(ctx, text, x+8, y+10, w-16, 12);
-  ctx.font = '8px monospace';
-  ctx.fillText('Press a move key to close', x+8, y+h-12);
+  ctx.fillStyle = '#d8dde6';
+  ctx.font = '9px "Courier New", monospace';  // smaller than before
+
+  wrapText(ctx, text, x + 7, y + 7, boxW - 14, 11);
+
+  // small close hint
+  ctx.font = '7px "Courier New", monospace';
+  ctx.fillStyle = '#aab3c2';
+  ctx.fillText('Press a move key to close', x + 7, y + boxH - 11);
+
+  ctx.restore();
 }
+
 
 function wrapText(ctx, str, x, y, maxWidth, lineHeight) {
   const words = str.split(' '); let line = '';
