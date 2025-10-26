@@ -72,39 +72,34 @@ export function drawRoom(ctx, room, tileSize, baseW, baseH) {
 export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
   const px = x * tileSize;
   const py = y * tileSize;
-
-  // Pixel size for a 10×10 sprite inside one tile
   const p = tileSize / 10;
 
-  // Palette tuned to your art direction
   const PAL = {
     T: '#0d0d12',   // outline / deep shadow
     H: '#1b1f27',   // hair + beard (very dark)
     S: '#c7a993',   // skin
-    E: '#e5e7eb',   // eye white
-    P: '#0d0d12',   // pupil
+    P: '#0d0d12',   // eye (black)
     G: '#8a8f9b',   // gown base
     g: '#737a86',   // gown shadow
     r: '#4c525d',   // rip/tear
     '.': null
   };
 
-  // 10×10 sprite maps
-  // Down-facing: messy dark hair, heavy eyes, torn gown with rips
+  // --- DOWN FACING ---
   const SPR_DOWN = [
     '..H H H H H..',
     '.H H H H H H.',
     '.H H H H H H.',
     '.H S S S S H.',
-    '.H S E P S H.',
+    '.H S P P S H.',   // two black eyes
     '.H S S S S H.',
     '.g g G G g g.',
     '.G G G r G G.',
     '.G r G G G g.',
-    '..T T T T T..'
+    '.S S S S S S.'    // bare feet (skin tone)
   ].map(row => row.replace(/\s/g,''));
 
-  // Up-facing: hair and gown back, no face
+  // --- UP FACING ---
   const SPR_UP = [
     '..H H H H H..',
     '.H H H H H H.',
@@ -115,33 +110,34 @@ export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
     '.g g G G g g.',
     '.G G G r G G.',
     '.G g G G G g.',
-    '..T T T T T..'
+    '.S S S S S S.'    // bare feet
   ].map(r => r.replace(/\s/g,''));
 
-  // Left-facing: one eye, beard edge, gown
+  // --- LEFT FACING ---
   const SPR_LEFT = [
     '..H H H H H..',
     '.H H H H H H.',
     '.H H H H H H.',
     '.H S S S S H.',
-    '.H S E P H H.',
+    '.H S P S H H.',   // one eye on left side
     '.H S S S g g.',
     '.g g G G G G.',
     '.G G r G G g.',
     '.G g G G r g.',
-    '..T T T T T..'
+    '.S S S S S S.'    // bare feet
   ].map(r => r.replace(/\s/g,''));
 
-  // Right = flip of left
+  // --- RIGHT FACING (mirror of LEFT) ---
   function flipRows(rows) {
     return rows.map(r => r.split('').reverse().join(''));
   }
   const SPR_RIGHT = flipRows(SPR_LEFT);
 
-  const SPR = facing === 'up' ? SPR_UP
-            : facing === 'left' ? SPR_LEFT
-            : facing === 'right' ? SPR_RIGHT
-            : SPR_DOWN;
+  const SPR =
+    facing === 'up' ? SPR_UP
+    : facing === 'left' ? SPR_LEFT
+    : facing === 'right' ? SPR_RIGHT
+    : SPR_DOWN;
 
   // Draw sprite
   for (let j = 0; j < 10; j++) {
@@ -150,10 +146,16 @@ export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
       const color = PAL[code];
       if (!color) continue;
       ctx.fillStyle = color;
-      ctx.fillRect(Math.round(px + i * p), Math.round(py + j * p), Math.ceil(p), Math.ceil(p));
+      ctx.fillRect(
+        Math.round(px + i * p),
+        Math.round(py + j * p),
+        Math.ceil(p),
+        Math.ceil(p)
+      );
     }
   }
 }
+
 
 
 
