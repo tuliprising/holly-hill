@@ -13,56 +13,60 @@ const bgm = document.getElementById('bgm');
 const ctx = setupHiDPI(canvas, BASE_W, BASE_H);
 const input = createInput(dpad);
 const state = createState();
-document.getElementById('hud').textContent = 'Booting…';
+
+// If you still have a #hud element and want a boot message, keep this.
+// Otherwise you can remove this line safely.
+// const hud = document.getElementById('hud'); if (hud) hud.textContent = 'Booting…';
 
 armBGM(bgm);
-
-// add this helper function near the top of your input listeners
-function maybeStart() {
-  if (state.mode === 'title') {
-    state.mode = 'play';
-    function updateHUD() {
-      roomNameEl.textContent = state.room.name;
-    }
-  }
-}
-
-// replace your existing event listeners with this version
-window.addEventListener('keydown', () => {
-  maybeStart();
-  const dir = input.firstHeld();
-  setDirection(state, dir);
-});
-window.addEventListener('keyup', () => {
-  const dir = input.firstHeld();
-  setDirection(state, dir);
-});
-dpad.addEventListener('pointerdown', () => {
-  maybeStart();
-  const dir = input.firstHeld();
-  setDirection(state, dir);
-});
-window.addEventListener('pointerup', () => {
-  const dir = input.firstHeld();
-  setDirection(state, dir);
-});
-window.addEventListener('pointercancel', () => {
-  const dir = input.firstHeld();
-  setDirection(state, dir);
-});
-window.addEventListener('blur', () => {
-  setDirection(state, null);
-});
 
 function updateHUD() {
   roomNameEl.textContent = state.room.name;
 }
 
+function maybeStart() {
+  if (state.mode === 'title') {
+    state.mode = 'play';
+    updateHUD();
+  }
+}
 
+// Input listeners
+window.addEventListener('keydown', () => {
+  maybeStart();
+  setDirection(state, input.firstHeld());
+});
+window.addEventListener('keyup', () => {
+  setDirection(state, input.firstHeld());
+});
+dpad.addEventListener('pointerdown', () => {
+  maybeStart();
+  setDirection(state, input.firstHeld());
+});
+window.addEventListener('pointerup', () => {
+  setDirection(state, input.firstHeld());
+});
+window.addEventListener('pointercancel', () => {
+  setDirection(state, input.firstHeld());
+});
+window.addEventListener('blur', () => {
+  setDirection(state, null);
+});
+
+// Initial title render
 updateHUD();
+
+// Track room changes so the title updates when you go through doors
+let lastRoomId = state.roomId;
 
 createLoop((now = performance.now()) => {
   stepLogic(state, now);
+
+  if (state.roomId !== lastRoomId) {
+    updateHUD();
+    lastRoomId = state.roomId;
+  }
+
   drawRoom(ctx, state.room, TILE, BASE_W, BASE_H);
   drawPlayer(ctx, state.player.x, state.player.y, TILE);
   drawVignette(ctx, BASE_W, BASE_H);
