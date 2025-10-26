@@ -143,7 +143,7 @@ export function drawNote(ctx, baseW, baseH, text) {
 
   // Close hint, tiny
   ctx.font = hintFont;
-  ctx.fillStyle = '#9aa4b5';
+  ctx.fillStyle = '#3d3940';
   ctx.fillText('Press a move key to close', x + padX, y + boxH - padBottom - hintLH);
 
   ctx.restore();
