@@ -1,21 +1,47 @@
+// src/engine/render.js
 export function setupHiDPI(canvas, baseW, baseH) {
   const ctx = canvas.getContext('2d', { alpha:false });
 
   function resize() {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const cssW = canvas.clientWidth || baseW;
+    const aspect = baseW / baseH;
+
+    const header = document.getElementById('music-header');
+    const hud    = document.getElementById('hud');
+    const dpad   = document.getElementById('dpad');
+
+    // How much vertical space the non-canvas UI uses
+    const chromeH =
+      (header?.offsetHeight || 0) +
+      (hud?.offsetHeight || 0) +
+      (dpad?.offsetHeight || 0) +
+      24; // small breathing room
+
+    const availW = document.documentElement.clientWidth;
+    const availH = Math.max(120, window.innerHeight - chromeH);
+
+    // Pick the limiting dimension so everything fits without scrolling
+    const cssW = Math.min(availW, Math.floor(availH * aspect));
+    const cssH = Math.round(cssW / aspect);
     const scale = cssW / baseW;
-    const cssH = Math.round(baseH * scale);
+
+    // Apply CSS size
+    canvas.style.width  = cssW + 'px';
     canvas.style.height = cssH + 'px';
+
+    // Set drawing buffer size with DPR
     canvas.width  = Math.round(baseW * scale * dpr);
     canvas.height = Math.round(baseH * scale * dpr);
+
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
     ctx.imageSmoothingEnabled = false;
   }
+
   resize();
   window.addEventListener('resize', resize);
   return ctx;
 }
+
 
 export const C = {
   floor:'#12131a', wall:'#2b2f3a', door:'#6b7280',
