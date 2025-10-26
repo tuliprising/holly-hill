@@ -72,88 +72,92 @@ export function drawRoom(ctx, room, tileSize, baseW, baseH) {
 export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
   const px = x * tileSize;
   const py = y * tileSize;
+  const p = tileSize / 10; // each pixel in the 10x10 sprite
 
-  // Pixel size for a 10×10 sprite inside one tile
-  const p = tileSize / 10;
-
-  // Palette tuned to your art direction
+  // Palette: muted, hospital vibe
   const PAL = {
-    T: '#0d0d12',   // outline / deep shadow
-    H: '#1b1f27',   // hair + beard (very dark)
-    S: '#c7a993',   // skin
-    E: '#e5e7eb',   // eye white
-    P: '#0d0d12',   // pupil
+    T: '#0b0c10',   // deep outline
+    H: '#1b1f27',   // hair + beard
+    S: '#caa68e',   // skin
+    s: '#b38f79',   // skin shadow
+    E: '#e6e8eb',   // eye white
+    P: '#0d0d12',   // pupil / dark circle
     G: '#8a8f9b',   // gown base
-    g: '#737a86',   // gown shadow
+    g: '#6f757f',   // gown shadow
     r: '#4c525d',   // rip/tear
     '.': null
   };
 
-  // 10×10 sprite maps
-  // Down-facing: messy dark hair, heavy eyes, torn gown with rips
+  // 10x10 sprites. Arms = skin pixels on row 6–7 edges. Bare feet = skin on bottom row.
+  // Eyes: small whites with dark pupils, plus under-eye darkness.
   const SPR_DOWN = [
-    '..H H H H H..',
-    '.H H H H H H.',
-    '.H H H H H H.',
-    '.H S S S S H.',
-    '.H S E P S H.',
-    '.H S S S S H.',
-    '.g g G G g g.',
-    '.G G G r G G.',
-    '.G r G G G g.',
-    '..T T T T T..'
-  ].map(row => row.replace(/\s/g,''));
+    ".HHHHHH...",   // messy hair
+    "HHHHHHHH..",
+    "HSSSSSSH..",   // face top
+    "HSE.PESH..",   // E and P form eyes
+    "HSPSSPSH..",   // under-eye darkness using P
+    "gGGGGGgg..",   // upper gown
+    "SGGGrGGGS.",   // arms visible (S ... S)
+    "SGGGGGGGs.",   // body
+    "gGGGGGGgg.",   // hem
+    ".S.....S.."    // bare feet
+  ];
 
-  // Up-facing: hair and gown back, no face
+  // Back view, no face, arms still visible
   const SPR_UP = [
-    '..H H H H H..',
-    '.H H H H H H.',
-    '.H H H H H H.',
-    '.H H H H H H.',
-    '.H H H H H H.',
-    '.H H H H H H.',
-    '.g g G G g g.',
-    '.G G G r G G.',
-    '.G g G G G g.',
-    '..T T T T T..'
-  ].map(r => r.replace(/\s/g,''));
+    ".HHHHHH...",   // hair
+    "HHHHHHHH..",
+    "HHHHHHHH..",
+    "HggggggH..",   // back of head shadow
+    "gGGGGGgg..",
+    "SGGGGGGGS.",   // arms out a bit
+    "SGGGrGGGS.",
+    "SGGGGGGGs.",
+    "gGGGGGGgg.",
+    ".S.....S.."    // bare feet
+  ];
 
-  // Left-facing: one eye, beard edge, gown
+  // Left view, single eye, beard edge, arm silhouette
   const SPR_LEFT = [
-    '..H H H H H..',
-    '.H H H H H H.',
-    '.H H H H H H.',
-    '.H S S S S H.',
-    '.H S E P H H.',
-    '.H S S S g g.',
-    '.g g G G G G.',
-    '.G G r G G g.',
-    '.G g G G r g.',
-    '..T T T T T..'
-  ].map(r => r.replace(/\s/g,''));
+    ".HHHHHH...",   // hair
+    "HHHHHHHH..",
+    "HSSSSSSH..",
+    "HSEP.HH...",   // one eye (SE P), beard mass on right (HH)
+    "HSPsGGgS.",   // cheek shadow, right arm hint
+    "gGGGGGGg.",   // gown
+    "SGGGrGGG.",   // arm on left side
+    "SGGGGGGG.", 
+    "gGGGGGGg.", 
+    ".S....S.."    // bare feet (slightly closer together)
+  ];
 
-  // Right = flip of left
-  function flipRows(rows) {
-    return rows.map(r => r.split('').reverse().join(''));
-  }
-  const SPR_RIGHT = flipRows(SPR_LEFT);
+  // Right is a mirror of left
+  function flip(rows) { return rows.map(r => r.split('').reverse().join('')); }
+  const SPR_RIGHT = flip(SPR_LEFT);
 
-  const SPR = facing === 'up' ? SPR_UP
-            : facing === 'left' ? SPR_LEFT
-            : facing === 'right' ? SPR_RIGHT
-            : SPR_DOWN;
+  const SPR =
+    facing === 'up' ? SPR_UP :
+    facing === 'left' ? SPR_LEFT :
+    facing === 'right' ? SPR_RIGHT :
+    SPR_DOWN;
 
-  // Draw sprite
   for (let j = 0; j < 10; j++) {
+    const row = SPR[j];
     for (let i = 0; i < 10; i++) {
-      const code = SPR[j][i];
+      const code = row[i];
       const color = PAL[code];
       if (!color) continue;
       ctx.fillStyle = color;
-      ctx.fillRect(Math.round(px + i * p), Math.round(py + j * p), Math.ceil(p), Math.ceil(p));
+      ctx.fillRect(
+        Math.round(px + i * p),
+        Math.round(py + j * p),
+        Math.ceil(p),
+        Math.ceil(p)
+      );
     }
   }
 }
+
 
 
 export function drawVignette(ctx, baseW, baseH) {
