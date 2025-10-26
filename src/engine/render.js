@@ -74,64 +74,89 @@ export function drawPlayer(ctx, x, y, tileSize, facing = 'down') {
   const py = y * tileSize;
   const p  = tileSize / 10; // 10×10 grid inside one tile
 
-  const SKIN = '#caa68e';        // skin tone
-  const EYE  = '#0d0d12';        // black eyes
-  const GOWN = '#8a8f9b';        // eerie gray hospital gown
-  const HAIR = '#1b1f27';        // dark hair
+  // Palette
+  const SKIN = '#caa68e';
+  const EYE  = '#0d0d12';
+  const G1   = '#8a8f9b';   // gown light
+  const G2   = '#737a86';   // gown dark
+  const HAIR = '#1b1f27';   // messy dark hair
 
-  // Helper to draw one simple body
-  function drawBase() {
-    // Hair (thin dark line above face)
-    ctx.fillStyle = HAIR;
-    ctx.fillRect(Math.round(px + 2*p), Math.round(py + 1*p), Math.ceil(6*p), Math.ceil(1*p));
-
-    // Body / gown
-    ctx.fillStyle = GOWN;
-    ctx.fillRect(Math.round(px + 2*p), Math.round(py + 2*p), Math.ceil(6*p), Math.ceil(6*p));
-
-    // Arms
-    ctx.fillStyle = SKIN;
-    ctx.fillRect(Math.round(px + 1*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p));
-    ctx.fillRect(Math.round(px + 8*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(2*p));
-
-    // Bare feet
-    ctx.fillRect(Math.round(px + 3*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p));
-    ctx.fillRect(Math.round(px + 6*p), Math.round(py + 8*p), Math.ceil(1*p), Math.ceil(1*p));
+  // Helpers
+  function R(cx, cy, w = 1, h = 1, color) {
+    if (!color) return;
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(px + cx * p), Math.round(py + cy * p), Math.ceil(w * p), Math.ceil(h * p));
   }
 
-  // --- Down-facing ---
+  // Messy hair cap, two rows with irregular edges, matches the simple style
+  function drawHair() {
+    // Row 0
+    R(2, 0, 1, 1, HAIR);
+    R(3, 0, 1, 1, HAIR);
+    R(4, 0, 1, 1, HAIR);
+    R(5, 0, 1, 1, HAIR);
+    R(6, 0, 1, 1, HAIR);
+    // Row 1, ragged
+    R(1, 1, 1, 1, HAIR);
+    R(2, 1, 1, 1, HAIR);
+    R(3, 1, 1, 1, HAIR);
+    R(4, 1, 1, 1, HAIR);
+    R(6, 1, 1, 1, HAIR);
+    R(7, 1, 1, 1, HAIR);
+  }
+
+  // Textured gown block, still the same 6×6 footprint, with a light-dark dither
+  function drawGown() {
+    // top-left of body area is (2,2), width 6, height 6
+    for (let gy = 0; gy < 6; gy++) {
+      for (let gx = 0; gx < 6; gx++) {
+        const isDark = ((gx + gy) % 2) === 0;
+        R(2 + gx, 2 + gy, 1, 1, isDark ? G2 : G1);
+      }
+    }
+    // subtle hem shadow along the bottom of the gown block
+    for (let gx = 0; gx < 6; gx++) {
+      R(2 + gx, 7, 1, 1, G2);
+    }
+  }
+
+  // Arms (skin), same simple placement
+  function drawArms() {
+    R(1, 4, 1, 2, SKIN); // left arm
+    R(8, 4, 1, 2, SKIN); // right arm
+  }
+
+  // Bare feet (skin)
+  function drawFeet() {
+    R(3, 8, 1, 1, SKIN);
+    R(6, 8, 1, 1, SKIN);
+  }
+
+  // Face details per orientation
+  function drawEyesDown() {
+    R(4, 4, 1, 1, EYE);
+    R(6, 4, 1, 1, EYE);
+  }
+  function drawEyeLeft()  { R(3, 4, 1, 1, EYE); }
+  function drawEyeRight() { R(6, 4, 1, 1, EYE); }
+
+  // Compose
+  drawHair();
+  drawGown();
+  drawArms();
+  drawFeet();
+
   if (facing === 'down') {
-    drawBase();
-    // Eyes (two black pixels centered on face)
-    ctx.fillStyle = EYE;
-    ctx.fillRect(Math.round(px + 4*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
-    ctx.fillRect(Math.round(px + 6*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
-  }
-
-  // --- Up-facing ---
-  else if (facing === 'up') {
-    drawBase();
-    // No visible eyes (back of head)
-    ctx.fillStyle = HAIR;
-    ctx.fillRect(Math.round(px + 2*p), Math.round(py + 2*p), Math.ceil(6*p), Math.ceil(1*p));
-  }
-
-  // --- Left-facing ---
-  else if (facing === 'left') {
-    drawBase();
-    // Single eye slightly toward left
-    ctx.fillStyle = EYE;
-    ctx.fillRect(Math.round(px + 3*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
-  }
-
-  // --- Right-facing ---
-  else if (facing === 'right') {
-    drawBase();
-    // Single eye slightly toward right
-    ctx.fillStyle = EYE;
-    ctx.fillRect(Math.round(px + 6*p), Math.round(py + 4*p), Math.ceil(1*p), Math.ceil(1*p));
+    drawEyesDown();
+  } else if (facing === 'left') {
+    drawEyeLeft();
+  } else if (facing === 'right') {
+    drawEyeRight();
+  } else {
+    // facing up, no visible eyes
   }
 }
+
 
 
 
