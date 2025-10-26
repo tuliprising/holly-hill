@@ -13,6 +13,8 @@ const bgm = document.getElementById('bgm');
 const ctx = setupHiDPI(canvas, BASE_W, BASE_H);
 const input = createInput(dpad);
 const state = createState();
+document.getElementById('hud').textContent = 'Booting…';
+
 
 armBGM(bgm);
 
