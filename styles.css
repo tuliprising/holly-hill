@@ -104,3 +104,21 @@ html, body {
 #music-links a:hover {
   text-decoration: underline;
 }
+
+/* Instruction line under header links */
+#play-help {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #b7beca;
+}
+
+/* Big room name above the canvas */
+#room-name {
+  margin: 6px 0 8px;
+  font-size: clamp(18px, 3.2vw, 28px);
+  font-weight: 700;
+  color: #e8ecf4;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
