@@ -74,7 +74,7 @@ createLoop((now = performance.now()) => {
   const roomH = state.room.h * TILE;
 
   drawRoom(ctx, state.room, TILE, roomW, roomH);
-  drawPlayer(ctx, state.player.x, state.player.y, TILE);
+  drawPlayer(ctx, state.player.x, state.player.y, TILE, state.player.facing);
   drawVignette(ctx, roomW, roomH);
   if (state.showText) drawNote(ctx, roomW, roomH, state.showText);
 });
