@@ -2,10 +2,10 @@ import { buildRoom, getDoorAt, noteText } from './maps.js';
 
 export function createState() {
   const state = {
-    mode: 'title', // 'title' | 'play' | 'note' | 'dialogue' (future)
+    mode: 'title',
     room: buildRoom('entry'),
     roomId: 'entry',
-    player: { x:3, y:9, facing:'down'},
+    player: { x:3, y:9, facing:'down' },
     showText: null,
     seen: new Set(),
     input: { dir:null, held:false, nextAt:0, firstDelay:180, repeatEvery:110 }
@@ -20,8 +20,9 @@ export function setDirection(state, dir) {
   state.input.nextAt = 0;  // allow immediate step
 
   if (dir === 'left' || dir === 'right' || dir === 'up' || dir === 'down') {
-  state.player.facing = dir;
-}
+    state.player.facing = dir;
+  }
+} // <-- this was missing
 
 export function stepLogic(state, now) {
   // Title screen does not advance game logic
