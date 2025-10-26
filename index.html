@@ -23,11 +23,14 @@
         📺 Watch the Music Video
       </a>
     </div>
+    <div id="play-help">Use arrow keys or the on-screen arrows to move</div>
   </div>
 
+
   <div id="hollyhill-game">
-    <div id="hud"></div>
+    <div id="room-name"></div>  <!-- New: large room name -->
     <canvas id="game" width="260" height="180"></canvas>
+    <div id="hud" aria-hidden="true"></div> <!-- optional, can keep for future -->
     <div id="dpad" aria-label="controls">
       <button data-dir="up">▲</button>
       <button data-dir="left">◀</button>
@@ -38,8 +41,6 @@
 
   <audio id="bgm" src="" loop></audio>
   
-
-
 
   <script type="module">
   // Try to load your app. If this import fails, the next script will show a message.
